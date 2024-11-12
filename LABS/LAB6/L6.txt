@@ -1,0 +1,39 @@
+#include <stdio.h>
+ 
+#define MIN(a,b)    ((a)<(b)?(a):(b))
+ 
+int main()
+{
+    printf("%d\n",MIN(7,5));
+    printf("%g\n",MIN(3.8,21));
+    return 0;
+}
+#include <stdio.h>
+ 
+// varianta 1 - macro implementat ca o instructiune care nu necesita punct si virgula
+#define CITIRE1(TEXT,P,VAR)	{printf(TEXT ": ");scanf("%" #P, &VAR);}
+ 
+// varianta 2 - macro implementat ca o instructiune care necesita punct si virgula
+#define citire2(TEXT,P,VAR)		do{printf(TEXT ": ");scanf("%" #P, &VAR);}while(0)
+ 
+// varianta 3 - macro implementat ca o expresie care in plus returneaza valoarea citita
+#define citire3(TEXT,P,VAR)		(printf(TEXT ": "), scanf("%" #P, &VAR), VAR)
+ 
+int main()
+{
+    float kg;
+    CITIRE1("Introduceti greutatea, intre 1 si 10 kg",g,kg)
+    printf("greutatea=%g\n",kg);
+    
+    int n;
+    citire2("nr elemente",d,n);
+    printf("n=%d\n",n);
+ 
+    getchar();
+ 
+    char ch;
+    printf("ch=%c\n",citire3("litera",c,ch));
+ 
+    return 0;
+}
+În corpul macroului, pentru a se concatena două elemente, se folosește operatorul binar ##

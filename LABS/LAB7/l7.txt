@@ -1,0 +1,58 @@
+/**
+#ifndef EPS
+    
+#endif
+#if conditie_1
+     cod compilat daca conditie_1 este true
+#elif conditie_2
+    cod compilat daca conditie_2 este true
+...
+#elif conditie_n
+     cod compilat daca conditie_n este true
+#else 
+...
+#endif
+#if defined(DEBUG) || defined(_DEBUG)
+    #define DBG(...)		fprintf(stderr,__VA_ARGS__)
+#else
+    #define DBG(...)
+#endif
+assert(condiție). Acest macro este declarat în antetul <assert.h>
+dacă condiția este îndeplinită, atunci programul continuă ca de obicei. Dacă nu se îndeplinește condiția, programul se oprește și se raportează un mesaj de eroare care cuprinde numele fișierului și linia de cod cu assert-ul care nu a fost îndeplinit.
+ex:
+Assertion failed: v!=NULL, file C:\Users\Razvan\Desktop\tests\1\1.c, line 26
+O variantă a macroului assert se poate implementa în felul următor:
+#define STRINGIFY_AUX(val)  #val
+#define STRINGIFY(txt)  STRINGIFY_AUX(txt)
+
+
+    #define myassert(cond)
+#else
+    #define myassert(cond)  do{     \
+        if(!(cond)){      \
+            fprintf(stderr,"Assertion failed: " #cond ", file " __FILE__ ", line " STRINGIFY(__LINE__) "\n");    \
+            abort();        \
+            }       \
+        }while(0)
+#endif
+Se constată că dacă NDEBUG este definit, atunci practic macroul nu mai produce cod. În caz contrar, din moment ce punct și virgulă este obligatoriu, se folosește do{...}while(0) pentru a încapsula instrucțiunea if.
+__FILE__ este o definiție predefinită care are ca valoare numele fișierului curent, sub formă de șir de caractere (ex: ”/home/stud/1.c”). __LINE__ este o definiție predefinită care are ca valoare numărul liniei curente, sub formă
+
+
+*/
+/**
+for(i=0;i<n;i++){
+    DBG("i=%d, n=%d, v=%p\n",i,n,v);
+    printf("v[%d]=",i);scanf("%g",&v[i]);
+    }
+*/
+/**
+Pentru a rula programul în mod de depanare, putem să-l compilăm cu gcc, folosind opțiunea ”-DDEBUG” pentru a activa macroul DBG
+Dacă folosim Code::Blocks, în fereastra ”Project build options”, tabul ”#defines”, se va adăuga DEBUG
+in linie de comandă vom folosi ”gcc -Wall -O3 -o prg prg.c”. În Code::Blocks sau Visual Studio vom selecta modul/configurația Release
+*/
+/**
+valorile pot fi sortate crescător, descrescător sau aleatoare
+valori speciale (min, max, valori pentru șters sau pentru inserat) pot fi pe prima poziție din vector, pe ultima, dublate sau să lipsească
+dacă în algoritm apar anumite constante (ex: 0), se pot da seturi de date care conțin/nu conțin aceste constante, care sunt toate sub sau deasupra constantelor date
+*/

@@ -1,0 +1,11 @@
+FILE *fopen(const char *nume_fisier, const char *mod)
+r - (read) fișierul este deschis pentru citire (se va permite doar citirea datelor
+din el), începând cu începutul fișierului.
+r+ - fișierul este deschis simultan pentru citire și scriere, începând cu 
+începutul fișierului. Dacă se vor scrie date, conținutul originar va fi suprascris
+w - (write) fișierul este deschis pentru scriere. Dacă nu există, se va crea un
+fișier nou. Dacă fișierul există deja, atunci i se șterge tot conținutul anterior.
+a - (append) fișierul este deschis pentru adăugare (scriere la sfârșit)
+a+ - fișierul este deschis pentru citire și adăugare. Scrierea întotdeauna se face
+la sfârșit de fișier. În standardul de C nu se specifică de unde anume se face
+citirea.

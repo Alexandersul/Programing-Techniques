@@ -1,0 +1,63 @@
+<stdarg.h>
+%g-nr reale
+Functie pentru erori facuta cu numar variabil de argumente :
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+ 
+void err(const char *fmt,...)
+{
+    va_list va;     		// pointer la lista de argumente variabile (varargs)
+    va_start(va,fmt);   		// va trebuie initializat cu ultimul argument fix al functiei
+    fprintf(stderr,"eroare: ");
+    vfprintf(stderr,fmt,va);	// varianta de fprintf care primeste o lista de argumente variabile
+    va_end(va);         		// dupa folosirea argumentelor variabile, trebuie apelat va_end
+    fputc('\n',stderr);
+    exit(EXIT_FAILURE);
+}
+
+int main()
+{
+    int i,n;
+    float x,y,e,min,max;
+ 
+    printf("n=");scanf("%d",&n);
+    if(n<=0||n>100)err("n invalid: %d\n",n);
+    printf("x=");scanf("%g",&x);
+    printf("y=");scanf("%g",&y);
+    if(x>=y)err("x=%g nu este mai mic decat y=%g\n",x,y);
+    max=x;
+    min=y;
+    for(i=0;i<n;i++){
+        printf("e=");scanf("%g",&e);
+        if(e<x||e>y)err("element invalid: %g\n",e);
+        if(e<min)min=e;
+        if(e>max)max=e;
+        }
+    printf("min: %g, max: %g\n",min,max);
+    return 0;
+}
+va_list - este un tip de date, analogic unui pointer, care va pointa la argumentele variabile
+va_start(va, ultimul_arg_fix) - atribuie lui va, care trebuie să fie de tipul va_list, adresa de început a argumentelor variabile. Pentru aceasta se folosește poziția ultimului argument fix al funcției, de dinainte de ...
+va_end(va) - după folosirea listei de argumente variabile va, trebuie apelat va_end pentru a elibera eventualele resurse alocate lui va.
+int printf(const char *format, ...) - scrie argumentele date la stdout
+int vprintf(const char *format,va_list arg) - primește argumentele sub forma unei liste varargs și le scrie la stdout
+int fprintf(FILE *stream,const char *format, ...) - scrie argumentele date în fișierul specificat
+int vfprintf(FILE *stream,const char *format,va_list va) - primește argumentele sub forma unei liste varargs și le scrie în fișierul specificat
+int snprintf(char *buf, size_t n,const char *format, ...) - scrie maxim n caractere din argumentele date în vectorul specificat
+int vsnprintf(char *buf, size_t n,const char *format,va_list va) - primește argumentele sub forma unei liste varargs și scrie maxim n caractere în vectorul specificat
+int sprintf(char *buf,const char *format, ...) -  scrie argumentele date în vectorul specificat. Această funcție se va folosi doar atunci când se știe sigur că argumentele se încadrează în vectorul dat.
+int vsprintf(char *buf,const char *format,va_list arg) - primește argumentele sub forma unei liste varargs și le scrie în vectorul specificat. Această funcție se va folosi doar atunci când se știe sigur că argumentele se încadrează în vectorul dat.
+Iterarea listei de argumente variabile se face folosind macroul va_arg(va,tip). Acest macro are doi parametri: lista de argumente variabile care se iterează (inițializată anterior cu va_start) și tipul de date corespunzător argumentului curent. La fiecare apel, va_arg va returna valoarea argumentului curent din listă, ca fiind de tipul dat și va trece la următorul argument. În acest fel, prin apeluri succesive ale lui va_arg, se vor itera toate argumentele din listă
+Au loc conversii de tipul:
+float → double
+orice tip întreg cu o dimensiune mai mică decât int (char, short) → int
+conversiile tipurilor întregi țin cont că tipul este sau nu cu semn (ex: short → int, unsigned short → unsigned int)
+placeholdere scanf: %hhd - char, %hd - short, %d - int la printf se poate folosi %d pentru : char, short sau int.
+Daca vrem un numar real adaugam .0 la el chiar dacă nu are parte zecimală. Sau pirn (Tip corespunzator)
+De obicei functiile cu un numar aleatoriu de variabile au ca prima variabila nr de variabile
+-scanf-urile  pot prmii ca argumente variabile addrInt, addrFloat și addStr fără operatorul & (adresă) în fața lor, deoarece aceste argumente deja reprezintă adresele unde se vor citi valori.
+după ce se încheie o parcurgere cu va_end, se poate folosi din nou va_start pentru reinițializarea listei de argumente variabile
+dacă dorim să ținem minte o anumită poziție din lista de argumente variabile, putem salva lista respectivă într-o copie, folosind macroul va_copy(va_destinație, va_sursă). va_copy copiază va_sursă în va_destinație, deci ambele liste vor pointa la același argument. După va_copy, va_destinatie va trebui eliberată cu va_end.
+
+

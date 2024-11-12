@@ -1,0 +1,282 @@
+Exemplul 1: Să se implementeze o propoziție folosind o listă dublu înlănțuită. 
+Fiecare element din listă este un cuvânt de maxim 15 caractere sau un semn de 
+punctuație. Programul va avea un meniu cu următoarele opțiuni: 1-propoziție nouă 
+(introducere cuvinte până la punct, exclusiv); 2-afișare; 3-șterge cuvânt; 
+4-ieșire:
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+ 
+typedef struct Cuvant{
+    char text[16];      		// max 15 litere+terminator
+    struct Cuvant *pred;      	// inlantuire la predecesor
+    struct Cuvant *urm;         	// inlantuire la urmator
+    }Cuvant;
+ 
+// aloca un nou cuvant si ii seteaza campul text
+// campurile pred si urm raman neinitializate
+Cuvant *Cuvant_nou(const char *text)
+{
+    Cuvant *c=(Cuvant*)malloc(sizeof(Cuvant));
+    if(!c){
+        printf("memorie insuficienta");
+        exit(EXIT_FAILURE);
+        }
+    strcpy(c->text,text);
+    return c;
+}
+ 
+typedef struct{
+    Cuvant *prim;       	// primul cuvant din lista
+    Cuvant *ultim;       	// ultimul cuvant din lista
+    }Propozitie;
+ 
+// initializare propozitie noua
+void Propozitie_init(Propozitie *p)
+{
+    p->prim=p->ultim=NULL;
+}
+ 
+// adauga un cuvant la sfarsitul propozitiei
+void Propozitie_adauga(Propozitie *p,Cuvant *c)
+{
+    c->pred=p->ultim;   		// predecesorul cuvantului este ultimul cuvant din lista
+    if(p->ultim){       		// daca mai sunt si alte cuvinte in lista
+        p->ultim->urm=c;    		// ultimul cuvant din lista va pointa catre noul cuvant
+        }else{             		// altfel, daca c este primul cuvant din lista
+        p->prim=c;      			// seteaza si inceputul listei la el
+        }
+    p->ultim=c;           		// seteaza sfarsitul listei pe noul cuvant
+    c->urm=NULL;      		// dupa cuvantul introdus nu mai urmeaza niciun cuvant
+}
+ 
+// cauta un text in propozitie si daca il gaseste returneaza un pointer la
+ cuvantul respectiv
+// daca nu-l gaseste, returneaza NULL
+Cuvant *Propozitie_cauta(Propozitie *p,const char *text)
+{
+    Cuvant *c;
+    for(c=p->prim;c;c=c->urm){
+        if(!strcmp(c->text,text))return c;
+        }
+    return NULL;
+}
+ 
+// sterge un cuvant din propozitie
+void Propozitie_sterge(Propozitie *p,Cuvant *c)
+{
+    if(c->pred){    		// cuvantul nu este primul in propozitie
+        c->pred->urm=c->urm;   	// campul urm al predecesorului lui c va pointa la cuvantul de dupa c
+        }else{      			// cuvantul este primul in propozitie
+        p->prim=c->urm;         		// seteaza inceputul listei pe urmatorul cuvant de dupa c
+        }
+    if(c->urm){     		// cuvantul nu este ultimul din propozitie
+        c->urm->pred=c->pred;  	// campul pred al cuvantului de dupa c va pointa la cuvantul de dinainte de c
+        }else{          		// cuvantul este ultimul din propozitie
+        p->ultim=c->pred;       		// seteaza sfarsitul listei pe predecesorul lui c
+        }
+    free(c);
+}
+ 
+// elibereaza cuvintele din memorie si reinitializeaza propozitia ca fiind vida
+void Propozitie_elibereaza(Propozitie *p)
+{
+    Cuvant *c,*urm;
+    for(c=p->prim;c;c=urm){
+        urm=c->urm;
+        free(c);
+        }
+    Propozitie_init(p);
+}
+ 
+int main()
+{
+    Propozitie p;
+    int op;     // optiune
+    char text[16];
+    Cuvant *c;
+ 
+    Propozitie_init(&p);				// initializare propozitie vida
+    do{
+        printf("1 - propozitie noua\n");
+        printf("2 - afisare\n");
+        printf("3 - stergere cuvant\n");
+        printf("4 - iesire\n");
+        printf("optiune: ");scanf("%d",&op);
+        switch(op){
+            case 1:
+                Propozitie_elibereaza(&p);    	// elibereaza posibila propozitie anterioara
+                for(;;){
+                    scanf("%s",text);
+                    // intre ultimul cuvant si punct trebuie sa existe un spatiu, pentru ca punctul sa fie considerat separat
+                    if(!strcmp(text,"."))break;      	// atentie: "." este un sir de caractere, nu o litera (char)
+                    Cuvant *c=Cuvant_nou(text);
+                    Propozitie_adauga(&p,c);
+                    }
+                break;
+            case 2:
+                for(c=p.prim;c;c=c->urm)printf("%s ",c->text);
+                printf(".\n");
+                break;
+            case 3:
+                printf("cuvant de sters:");scanf("%s",text);
+                c=Propozitie_cauta(&p,text);
+                if(c){
+                    Propozitie_sterge(&p,c);
+                    }else{
+                    printf("cuvantul \"%s\" nu se gaseste in propozitie\n",text);
+                    }
+                break;
+            case 4:break;
+            default:printf("optiune invalida");
+            }
+        }while(op!=4);
+    return 0;
+}
+
+
+Programul anterior, folosind TDA-ul LISTAD, va fi compus din două fișiere: ”listad.h”, care implementează TDA-ul și ”ex2.c”, care folosește acest TDA:
+// listad.h
+#if !defined(LISTAD_NUME) || !defined(LISTAD_ELEMENT)
+    #error "LISTAD_NUME si LISTAD_ELEMENT trebuie definite inainte de a include listad.h"
+#endif
+ 
+typedef struct{
+    LISTAD_ELEMENT *prim;       
+    LISTAD_ELEMENT *ultim;      
+    }LISTAD_NUME;
+ 
+#ifndef LISTAD_FN
+    // aceste macrouri sunt definite doar daca listad.h nu a mai fost inclus anterior
+    #define LISTAD_FNAUX(NUME,OPERATIE)     NUME##_##OPERATIE
+    #define LISTAD_FN(NUME,OPERATIE)     LISTAD_FNAUX(NUME,OPERATIE)
+#endif
+ 
+void LISTAD_FN(LISTAD_NUME,init)(LISTAD_NUME *lista)
+{
+    lista->prim=lista->ultim=NULL;
+}
+ 
+void LISTAD_FN(LISTAD_NUME,adauga)(LISTAD_NUME *lista,LISTAD_ELEMENT *e)
+{
+    e->pred=lista->ultim;
+    if(lista->ultim){
+        lista->ultim->urm=e;
+        }else{
+        lista->prim=e;
+        }
+    lista->ultim=e;
+    e->urm=NULL;
+}
+ 
+void LISTAD_FN(LISTAD_NUME,sterge)(LISTAD_NUME *lista,LISTAD_ELEMENT *e)
+{
+    if(e->pred){
+        e->pred->urm=e->urm;
+        }else{
+        lista->prim=e->urm;
+        }
+    if(e->urm){
+        e->urm->pred=e->pred;
+        }else{
+        lista->ultim=e->pred;
+        }
+    free(e);
+}
+ 
+void LISTAD_FN(LISTAD_NUME,elibereaza)(LISTAD_NUME *lista)
+{
+    LISTAD_ELEMENT *e,*urm;
+    for(e=lista->prim;e;e=urm){
+        urm=e->urm;
+        free(e);
+        }
+    LISTAD_FN(LISTAD_NUME,init)(lista);
+}
+ 
+// definitiile trebuie sterse pentru a putea refolosi listad.h de mai multe ori in cadrul aceluiasi fisier
+#undef LISTAD_NUME
+#undef LISTAD_ELEMENT
+Programul principal va deveni:
+// ex2.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+ 
+typedef struct Cuvant{
+    char text[16];      	
+    struct Cuvant *pred;
+    struct Cuvant *urm; 
+    }Cuvant;
+ 
+Cuvant *Cuvant_nou(const char *text)
+{
+    Cuvant *c=(Cuvant*)malloc(sizeof(Cuvant));
+    if(!c){
+        printf("memorie insuficienta");
+        exit(EXIT_FAILURE);
+        }
+    strcpy(c->text,text);
+    return c;
+}
+ 
+#define LISTAD_NUME         Propozitie      	// numele TDA
+#define LISTAD_ELEMENT   Cuvant      	// tipului unui element din lista
+#include "listad.h"
+ 
+Cuvant *Propozitie_cauta(Propozitie *p,const char *text)
+{
+    Cuvant *c;
+    for(c=p->prim;c;c=c->urm){
+        if(!strcmp(c->text,text))return c;
+        }
+    return NULL;
+}
+ 
+int main()
+{
+    Propozitie p;
+    int op;     // optiune
+    char text[16];
+    Cuvant *c;
+ 
+    Propozitie_init(&p);
+    do{
+        printf("1 - propozitie noua\n");
+        printf("2 - afisare\n");
+        printf("3 - stergere cuvant\n");
+        printf("4 - iesire\n");
+        printf("optiune: ");scanf("%d",&op);
+        switch(op){
+            case 1:
+                Propozitie_elibereaza(&p);
+                for(;;){
+                    scanf("%s",text);
+                    if(!strcmp(text,"."))break;
+                    Cuvant *c=Cuvant_nou(text);
+                    Propozitie_adauga(&p,c);
+                    }
+                break;
+            case 2:
+                for(c=p.prim;c;c=c->urm)printf("%s ",c->text);
+                printf(".\n");
+                break;
+            case 3:
+                printf("cuvant de sters:");scanf("%s",text);
+                c=Propozitie_cauta(&p,text);
+                if(c){
+                    Propozitie_sterge(&p,c);
+                    }else{
+                    printf("cuvantul \"%s\" nu se gaseste in propozitie\n",text);
+                    }
+                break;
+            case 4:break;
+            default:printf("optiune invalida");
+            }
+        }while(op!=4);
+    return 0;
+} 
+
+Note: 
+- toate listele sunt dublu înlănțuite
+- nu se vor folosi vectori, decât pentru șiruri de caractere

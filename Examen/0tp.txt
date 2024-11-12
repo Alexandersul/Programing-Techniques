@@ -1,0 +1,91 @@
+Variabilele stdin, stdout și stderr sunt de fapt tot fișiere, astfel încât se pot folosi ca orice fișiere. Prin intermediul lor avem acces la tastatură 
+(stdin) și la ecran (stdout), ca și când acestea ar fi fișiere de intrare, respectiv ieșire.
+Fișierul stderr este inițial asociat tot ecranului, la fel ca stdout, dar se folosește pentru afișarea mesajelor de eroare.
+long ftell(FILE *fis) - returnează poziția curentă (offsetul) din fișier, față de începutul acestuia. La această poziție vor avea loc următoarele operații de 
+citire sau de scriere.
+int fseek(FILE *fis,long offset,int reper) - setează poziția curentă din fișier, folosind ca punct de referință reperul specificat. Reperul poate fi: 
+SEEK_SET - începutul fișierului, SEEK_CUR - poziția curentă, SEEK_END - sfârșitul fișierului. De exemplu, fseek(fis,0,SEEK_END) va muta poziția curentă la sfârșit de 
+fișier.
+Putem implementa simplu cerința ca un tip întreg să aibă o dimensiune constantă, indiferent de compilator sau platformă, folosind antetul <stdint.h> 
+(standard integers). În acest antet se află definite o serie de tipuri întregi, astfel încât fiecare tip are o dimensiune precis specificată. Tipurile
+ întregi definite în stdint.h sunt de forma int8_t, int16_t, int32_t, int64_t pentru numere cu semn și uint8_t, uint16_t, uint32_t, uint64_t pentru numere fără semn. 
+Numărul din numele tipului arată câți biți are acel tip. Folosind de exemplu tipul uint16_t, știm că acesta va ocupa doi octeți, indiferent de compilatorul sau de 
+platforma pe care compilăm programul.
+
+Se folosesc ”#ifdef NUME”( verifica daca exista define cu NUME), respectiv ”#ifndef NUME”(verifica opusul),#elif,#else;
+
+Putem să includem în cod teste și pentru verificarea contractului unei funcții pentru aceasta se folosesc aserțiuni ,macroul assert(condiție) cu antetul <assert.h>
+double vmax(const double *v,int n)
+{
+    int i;
+    assert(v!=NULL);
+    assert(n>0);
+    double m=v[0];
+    for(i=1;i<n;i++){
+        if(m<v[i])m=v[i];
+        }
+    return m;
+}
+o varianta a macroului assert e:
+#define STRINGIFY_AUX(val)  #val
+#define STRINGIFY(txt)  STRINGIFY_AUX(txt)
+ 
+#ifdef NDEBUG
+    #define myassert(cond)
+#else
+    #define myassert(cond)  do{     \
+        if(!(cond)){      \
+            fprintf(stderr,"Assertion failed: " #cond ", file " __FILE__ ", line " STRINGIFY(__LINE__) "\n");    \
+            abort();        \
+            }       \
+        }while(0)
+#endif
+
+Debug - acest mod de compilare este destinat dezvoltării, testării și depanării programelor. Sunt incluse tot felul de teste și informații suplimentare, destinate programatorului. În acest mod de compilare se definesc macrouri specifice, de exempul DEBUG sau _DEBUG, care pot fi folosite în program pentru a testa în ce mod suntem.
+Release - acest mod de compilare este destinat compilării programului în varianta finală, care va fi livrată beneficiarului. În acest mod dispar toate testele și informațiile suplimentare destinate testării și depanării și totodată compilatorul optimizează pe cât posibil codul final, din punct de vedere al vitezei de execuție și/sau al memoriei ocupate. Unele IDE definesc macroul NDEBUG (no debug) pentru acest mod.
+
+Se constată că un macro poate avea un număr variabil de argumente, dacă se specifică … (trei puncte). În acest caz, lista valorilor argumentelor se depune în variabila __VA_ARGS__
+#if defined(DEBUG) || defined(_DEBUG)
+    #define DBG(...)		fprintf(stderr,__VA_ARGS__)
+#else
+    #define DBG(...)
+#endif
+Pentru implementarea funcțiilor varargs, limbajul C pune la dispoziție mai multe funcții și macrouri definite în antetul <stdarg.h>
+
+va_list - este un tip de date, analogic unui pointer, care va pointa la argumentele variabile
+va_start(va, ultimul_arg_fix) - atribuie lui va, care trebuie să fie de tipul va_list, adresa de început a argumentelor variabile. Pentru aceasta se folosește poziția ultimului argument fix al funcției, de dinainte de ...
+va_end(va) - după folosirea listei de argumente variabile va, trebuie apelat va_end pentru a elibera eventualele resurse alocate lui va.
+
+int printf(const char *format, ...) - scrie argumentele date la stdout
+int vprintf(const char *format,va_list arg) - primește argumentele sub forma unei liste varargs și le scrie la stdout
+int fprintf(FILE *stream,const char *format, ...) - scrie argumentele date în fișierul specificat
+int vfprintf(FILE *stream,const char *format,va_list va) - primește argumentele sub forma unei liste varargs și le scrie în fișierul specificat
+int snprintf(char *buf, size_t n,const char *format, ...) - scrie maxim n caractere din argumentele date în vectorul specificat
+int vsnprintf(char *buf, size_t n,const char *format,va_list va) - primește argumentele sub forma unei liste varargs și scrie maxim n caractere în vectorul specificat
+int sprintf(char *buf,const char *format, ...) -  scrie argumentele date în vectorul specificat. Această funcție se va folosi doar atunci când se știe sigur că argumentele se încadrează în vectorul dat.
+int vsprintf(char *buf,const char *format,va_list arg) - primește argumentele sub forma unei liste varargs și le scrie în vectorul specificat. Această funcție se va folosi doar atunci când se știe sigur că argumentele se încadrează în vectorul dat.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+ 
+double maxN(int n,...)
+{
+    va_list va;                     		// lista de argumente variabile
+    va_start(va,n);             		// initializare cu ultimul argument fix
+    double max=va_arg(va,double);	// preia prima valoare din va, ca fiind de tip double
+    while(--n){
+        double e=va_arg(va,double);	// returneaza pe rand fiecare valoare ramasa in va ca fiind de tip double
+        if(max<e)max=e;
+        }
+    va_end(va);
+    return max;
+}
+ 
+int main()
+{
+    printf("%g\n",maxN(3,8,0,5));		// eroare la executie: 8, 0 si 5 sunt considerate ca fiind de tip int, deci maxN nu le va procesa corect
+    printf("%g\n",maxN(3,(double)8,0.0,(float)5));	// apel corect => 8
+    return 0;
+}
+
